@@ -1,0 +1,21 @@
+<nav style="display: flex; gap: 1rem;">
+  @if pagination.has_prev()
+  <a href="@{ctx.build_page_url(pagination.current - 1)}">←</a>
+  @else
+  <span>←</span>
+  @end
+
+  @for entry in pagination.range
+    @if entry == 0
+    <span>...</span>
+    @else
+    <a href="@{ctx.build_page_url(entry)}">@{entry}</a>
+    @end
+  @end
+
+  @if pagination.has_next()
+  <a href="@{ctx.build_page_url(pagination.current + 1)}">→</a>
+  @else
+  <span>→</span>
+  @end
+</nav>

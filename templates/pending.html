@@ -1,17 +1,28 @@
-<div style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+<div style="display: flex; flex-direction: column; align-items: center; gap: 1rem">
   <div>
-    <img id="pending-image" src="@pending_picture.path" style="width: auto; height: 750px;" />
+    <img id="pending-image" src="@{picture.path}" style="width: auto; height: 750px" />
   </div>
 
-  <div style="display: flex; gap: 3rem;">
-    <form method="POST" action="/accept">
-      <input type="hidden" name="src" value="@pending_picture.path" />
-      <button type="submit" style="color: green; font-size: 3rem;">ACCEPT</button>
-    </form>
-
-    <form method="POST" action="/decline">
-      <input type="hidden" name="src" value="@pending_picture.path" />
-      <button type="submit" style="color: red; font-size: 3rem;">DECLINE</button>
-    </form>
+  <div style="display: flex; gap: 3rem">
+    <button onclick="accept('@{picture.path}')" style="color: green; font-size: 3rem">ACCEPT</button>
+    <button onclick="decline('@{picture.path}')" style="color: red; font-size: 3rem">DECLINE</button>
   </div>
+
+  <script>
+    async function accept(src) {
+      const body = JSON.stringify({ src });
+      const result = await fetch("/accept", { method: "POST", body, headers: { "Content-Type": "application/json" } });
+      if (result.ok) {
+        location.replace("/");
+      }
+    }
+
+    async function decline(src) {
+      const body = JSON.stringify({ src });
+      const result = await fetch("/decline", { method: "POST", body, headers: { "Content-Type": "application/json" } });
+      if (result.ok) {
+        location.replace("/");
+      }
+    }
+  </script>
 </div>

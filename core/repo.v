@@ -1,6 +1,7 @@
 module core
 
 import db.sqlite
+import os
 
 pub fn random_pending(mut pool sqlite.ConnectionPool) !Picture {
 	conn := pool.acquire()!
@@ -16,20 +17,66 @@ pub fn random_pending(mut pool sqlite.ConnectionPool) !Picture {
 	return pictures[0]
 }
 
-pub fn accept(mut pool sqlite.ConnectionPool, path string) ! {
+pub fn set_status(mut pool sqlite.ConnectionPool, path string, status PictureStatus) ! {
 	conn := pool.acquire()!
 	defer { pool.release(conn) }
 
 	sql conn {
-		update Picture set status = .accepted where path == path
+		update Picture set status = status, updated_at = time.utc() where path == path
 	}!
 }
 
-pub fn decline(mut pool sqlite.ConnectionPool, path string) ! {
+pub fn remove_from_disk(mut pool sqlite.ConnectionPool, path string, status PictureStatus) ! {
 	conn := pool.acquire()!
 	defer { pool.release(conn) }
 
+	os.rm(path)!
+
 	sql conn {
-		update Picture set status = .declined where path == path
+		delete from Picture where path == path
 	}!
+}
+
+@[params]
+struct PageConfig {
+pub:
+	page     u32
+	per_page u32 = 30
+	limit    u32
+}
+
+fn (c &PageConfig) offset() u32 {
+	return (c.page - 1) * c.per_page
+}
+
+struct FetchResult[T] {
+pub:
+	items []T
+	count u64
+}
+
+pub fn by_status(mut pool sqlite.ConnectionPool, status PictureStatus, params PageConfig) !FetchResult[Picture] {
+	conn := pool.acquire()!
+	defer { pool.release(conn) }
+
+	count := sql conn {
+  	select count from Picture where status == status
+  }!
+
+	mut items := []Picture{}
+
+	// TODO: bug with `offset params.offset()`
+	if count > 0 {
+		offset := params.offset()
+
+		items = sql conn {
+     select from Picture
+     where status == status
+     order by updated_at desc
+     limit params.per_page
+     offset offset
+   }!
+	}
+
+	return FetchResult{ items: items, count: count }
 }
