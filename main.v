@@ -2,22 +2,22 @@ module main
 
 import os
 import core
-import walk
 import config
+import web
 
 const default_config_path = 'config.json'
+const default_database_path = 'db.sqlite3'
 
 fn main() {
 	cfg_path := os.args[1] or { default_config_path }
 	cfg := config.parse(cfg_path)!
 
-	mut pool := core.new_pool(cfg.database, cfg.pool_size)!
+	database_path := if cfg.database == '' { default_database_path } else { cfg.database }
+	mut pool := core.new_pool(database_path, cfg.pool_size)!
+
 	mut conn := pool.acquire()!
 	core.run_migrations(mut conn)!
+	pool.release(conn)
 
-	for walk_cfg in cfg.walk {
-		walk.run(walk_cfg, mut conn)
-	}
-
-	defer { pool.release(conn) }
+	web.run(cfg.port, pool)!
 }

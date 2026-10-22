@@ -7,6 +7,7 @@ pub struct Config {
 pub:
 	database  string
 	pool_size i32
+	port      u16 @[required]
 	walk      []WalkConfig
 }
 

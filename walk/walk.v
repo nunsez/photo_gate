@@ -41,3 +41,11 @@ fn callback(ctx &Context, path string) {
 
 	println('walk done: ${path}')
 }
+
+fn run_with_new_config(cfg_path string, mut db sqlite.DB) {
+	cfg := config.parse(cfg_path)!
+
+	for walk_cfg in cfg.walf {
+		run(walk_cfg, mut db)
+	}
+}
