@@ -1,6 +1,8 @@
 <div style="display: flex; flex-direction: column; align-items: center; gap: 1rem">
   <div>
-    <img id="pending-image" src="@{picture.path}" style="width: auto; height: 750px" />
+    <a style="display: block" href="@{picture.path}" target="_blank">
+      <img id="pending-image" src="@{picture.path}" title="@{picture.path}" style="width: auto; height: 750px" />
+    </a>
   </div>
 
   <p style="margin: 0">@{picture.path}</p>
