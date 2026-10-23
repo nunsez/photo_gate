@@ -42,10 +42,15 @@ fn callback(ctx &Context, path string) {
 	println('walk done: ${path}')
 }
 
-fn run_with_new_config(cfg_path string, mut db sqlite.DB) {
+pub fn run_with_new_config(cfg_path string, mut db sqlite.DB) ! {
 	cfg := config.parse(cfg_path)!
+	lockfile := os.join_path_single(os.temp_dir(), 'picture_gate_walker_${getpid()}.lock')
 
-	for walk_cfg in cfg.walf {
+	if os.is_file(lockfile) { return }
+	os.write_file(lockfile, '')!
+	defer { os.rm(lockfile) or {} }
+
+	for walk_cfg in cfg.walk {
 		run(walk_cfg, mut db)
 	}
 }

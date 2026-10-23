@@ -11,8 +11,16 @@
         <a href="/">Pending</a>
         <a href="/declined">Declined</a>
         <a href="/accepted">Accepted</a>
+        <a href="#" onclick="handleScan()">Scan</a>
       </div>
       <div>@{params.content}</div>
     </main>
+
+    <script>
+    async function handleScan() {
+      const result = await fetch("/scan", { method: "POST" });
+      console.log(result);
+    }
+    </script>
   </body>
 </html>

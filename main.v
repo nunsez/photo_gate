@@ -19,5 +19,5 @@ fn main() {
 	core.run_migrations(mut conn)!
 	pool.release(conn)
 
-	web.run(cfg.port, pool)!
+	web.run(cfg.port, cfg_path, pool)!
 }

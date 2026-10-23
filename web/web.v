@@ -6,6 +6,7 @@ import core
 import os
 import net.urllib
 import strconv
+import walk
 
 pub struct Context {
 	veb.Context
@@ -27,11 +28,12 @@ pub fn (ctx &Context) build_page_url(page u64) string {
 }
 
 pub struct App {
-	pool sqlite.ConnectionPool
+	pool     sqlite.ConnectionPool
+	cfg_path string
 }
 
-pub fn run(port u16, pool sqlite.ConnectionPool) ! {
-	mut app := App{ pool: pool }
+pub fn run(port u16, cfg_path string, pool sqlite.ConnectionPool) ! {
+	mut app := App{ pool: pool, cfg_path: cfg_path }
 	veb.run[App, Context](mut app, port)
 }
 
@@ -110,9 +112,22 @@ pub fn (app &App) pending(mut ctx Context) !veb.Result {
 
 @['/remove'; post]
 pub fn (app &App) remove(mut ctx Context) !veb.Result {
+	panic('forbidden')
 	url := urllib.parse(ctx.form['src'])!
 	core.remove_from_disk(mut app.pool, url.path)!
 	return ctx.ok('')
+}
+
+@['/scan'; post]
+pub fn (app &App) scan(mut ctx Context) !veb.Result {
+	spawn handle_scan(app.cfg_path, mut &app.pool)
+	return ctx.redirect('/')
+}
+
+fn handle_scan(cfg_path string, mut pool sqlite.ConnectionPool) {
+	mut conn := pool.acquire() or { return }
+	defer { pool.release(conn) }
+	walk.run_with_new_config(cfg_path, mut conn) or { return }
 }
 
 @['/:path...']
