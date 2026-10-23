@@ -3,6 +3,8 @@
     <img id="pending-image" src="@{picture.path}" style="width: auto; height: 750px" />
   </div>
 
+  <p style="margin: 0">@{picture.path}</p>
+
   <div style="display: flex; gap: 3rem">
     <button onclick="accept('@{picture.path}')" style="color: green; font-size: 3rem">ACCEPT</button>
     <button onclick="decline('@{picture.path}')" style="color: red; font-size: 3rem">DECLINE</button>
