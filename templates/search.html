@@ -1,0 +1,13 @@
+<form method="get" style="display: flex; justify-content: center; gap: 1rem">
+  <input
+    type="search"
+    name="q"
+    value="@{q}"
+    placeholder="Search by path"
+    style="min-width: 20rem; padding: 0.5rem 0.75rem; font-size: 1rem"
+  />
+  <button type="submit" style="font-size: 1rem">Search</button>
+  @if q != ''
+  <a href="@{ctx.req.url.all_before('?')}" style="align-self: center">Clear</a>
+  @end
+</form>

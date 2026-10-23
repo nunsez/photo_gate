@@ -26,7 +26,7 @@ pub fn set_status(mut pool sqlite.ConnectionPool, path string, status PictureSta
 	}!
 }
 
-pub fn remove_from_disk(mut pool sqlite.ConnectionPool, path string, status PictureStatus) ! {
+pub fn remove_from_disk(mut pool sqlite.ConnectionPool, path string) ! {
 	conn := pool.acquire()!
 	defer { pool.release(conn) }
 
@@ -43,6 +43,7 @@ pub:
 	page     u32
 	per_page u32 = 30
 	limit    u32
+	q        string
 }
 
 fn (c &PageConfig) offset() u32 {
@@ -59,9 +60,18 @@ pub fn by_status(mut pool sqlite.ConnectionPool, status PictureStatus, params Pa
 	conn := pool.acquire()!
 	defer { pool.release(conn) }
 
-	count := sql conn {
-  	select count from Picture where status == status
-  }!
+	has_query := params.q != ''
+	pattern := '%${params.q}%'
+
+	count := if has_query {
+		sql conn {
+			select count from Picture where status == status && path like pattern
+		}!
+	} else {
+		sql conn {
+			select count from Picture where status == status
+		}!
+	}
 
 	mut items := []Picture{}
 
@@ -69,13 +79,23 @@ pub fn by_status(mut pool sqlite.ConnectionPool, status PictureStatus, params Pa
 	if count > 0 {
 		offset := params.offset()
 
-		items = sql conn {
-     select from Picture
-     where status == status
-     order by updated_at desc
-     limit params.per_page
-     offset offset
-   }!
+		items = if has_query {
+			sql conn {
+				select from Picture
+				where status == status && path like pattern
+				order by updated_at desc
+				limit params.per_page
+				offset offset
+			}!
+		} else {
+			sql conn {
+				select from Picture
+				where status == status
+				order by updated_at desc
+				limit params.per_page
+				offset offset
+			}!
+		}
 	}
 
 	return FetchResult{ items: items, count: count }

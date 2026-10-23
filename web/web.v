@@ -62,7 +62,8 @@ const per_page = 30
 @['/declined']
 pub fn (app &App) declined(mut ctx Context) !veb.Result {
 	page := strconv.atou32(ctx.query['page'] or { '1' })!
-	result := core.by_status(mut app.pool, .declined, limit: per_page, page: page)!
+	q := (ctx.query['q'] or { '' }).trim_space()
+	result := core.by_status(mut app.pool, .declined, limit: per_page, page: page, q: q)!
 	pagination := core.new_pagination(
 		current_page: page
 		total_items:  result.count
@@ -75,7 +76,8 @@ pub fn (app &App) declined(mut ctx Context) !veb.Result {
 @['/accepted']
 pub fn (app &App) accepted(mut ctx Context) !veb.Result {
 	page := strconv.atou32(ctx.query['page'] or { '1' })!
-	result := core.by_status(mut app.pool, .accepted, limit: per_page, page: page)!
+	q := (ctx.query['q'] or { '' }).trim_space()
+	result := core.by_status(mut app.pool, .accepted, limit: per_page, page: page, q: q)!
 	pagination := core.new_pagination(
 		current_page: page
 		total_items:  result.count
