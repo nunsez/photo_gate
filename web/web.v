@@ -7,9 +7,14 @@ import os
 import net.urllib
 import strconv
 import walk
+import datastar
 
 pub struct Context {
 	veb.Context
+}
+
+fn (mut ctx Context) datastar_remove(selector string) veb.Result {
+	return ctx.send_response_to_client(datastar.sse, datastar.remove_event(selector))
 }
 
 pub fn (ctx &Context) build_page_url(page u64) string {
@@ -94,33 +99,73 @@ pub fn (app &App) accepted(mut ctx Context) !veb.Result {
 	return ctx.html(html)
 }
 
-@['/accept'; post]
-pub fn (app &App) accept(mut ctx Context) !veb.Result {
-	url := urllib.parse(ctx.form['src'])!
-	core.set_status(mut app.pool, url.path, .accepted)!
-	return ctx.ok('')
+enum PageKind {
+	pending
+	accepted
+	declined
 }
 
-@['/decline'; post]
-pub fn (app &App) decline(mut ctx Context) !veb.Result {
-	url := urllib.parse(ctx.form['src'])!
-	core.set_status(mut app.pool, url.path, .declined)!
-	return ctx.ok('')
+fn PageKind.from_ctx(ctx Context) !PageKind {
+	return PageKind.from(ctx.form['pageKind'])!
 }
 
-@['/pending'; post]
-pub fn (app &App) pending(mut ctx Context) !veb.Result {
-	url := urllib.parse(ctx.form['src'])!
-	core.set_status(mut app.pool, url.path, .pending)!
-	return ctx.ok('')
+@['/accept/:id'; patch]
+pub fn (app &App) accept(mut ctx Context, id i64) !veb.Result {
+	kind := PageKind.from_ctx(ctx) or {
+		return ctx.request_error('bad kind')
+	}
+
+	core.set_status(mut app.pool, id, .accepted) or {
+		return ctx.request_error(err.str())
+	}
+
+	match kind {
+		.pending { return ctx.redirect('/', typ: .see_other) }
+		.declined {
+			selector := '#${core.Picture.dom_id(id)}'
+			return ctx.datastar_remove(selector)
+		}
+		else { return ctx.request_error('bad kind') }
+	}
 }
 
-@['/remove'; post]
-pub fn (app &App) remove(mut ctx Context) !veb.Result {
-	panic('forbidden')
-	url := urllib.parse(ctx.form['src'])!
-	core.remove_from_disk(mut app.pool, url.path)!
-	return ctx.ok('')
+@['/decline/:id'; patch]
+pub fn (app &App) decline(mut ctx Context, id i64) !veb.Result {
+	kind := PageKind.from_ctx(ctx) or {
+		return ctx.request_error('bad kind')
+	}
+
+	core.set_status(mut app.pool, id, .declined) or {
+		return ctx.request_error(err.str())
+	}
+
+	match kind {
+		.pending { return ctx.redirect('/', typ: .see_other) }
+		.accepted {
+			selector := '#${core.Picture.dom_id(id)}'
+			return ctx.datastar_remove(selector)
+		}
+		else { return ctx.request_error('') }
+	}
+}
+
+@['/pending/:id'; patch]
+pub fn (app &App) pending(mut ctx Context, id i64) !veb.Result {
+	kind := PageKind.from_ctx(ctx) or {
+		return ctx.request_error('bad kind')
+	}
+
+	core.set_status(mut app.pool, id, .pending) or {
+		return ctx.request_error(err.str())
+	}
+
+	match kind {
+		.accepted, .declined {
+			selector := '#${core.Picture.dom_id(id)}'
+			return ctx.datastar_remove(selector)
+		}
+		else { return ctx.request_error('') }
+	}
 }
 
 @['/scan'; post]

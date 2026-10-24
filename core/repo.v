@@ -17,12 +17,12 @@ pub fn random_pending(mut pool sqlite.ConnectionPool) !Picture {
 	return pictures[0]
 }
 
-pub fn set_status(mut pool sqlite.ConnectionPool, path string, status PictureStatus) ! {
+pub fn set_status(mut pool sqlite.ConnectionPool, id i64, status PictureStatus) ! {
 	conn := pool.acquire()!
 	defer { pool.release(conn) }
 
 	sql conn {
-		update Picture set status = status, updated_at = time.utc() where path == path
+		update Picture set status = status, updated_at = time.utc() where id == id
 	}!
 }
 

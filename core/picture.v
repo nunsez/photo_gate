@@ -19,3 +19,14 @@ pub mut:
 	updated_at  time.Time = time.utc()
 	created_at  time.Time = time.utc()
 }
+
+pub fn Picture.dom_id(id i64, prefix ?string) string {
+	if prefix == none {
+		return 'picture-${id}'
+	}
+	return '${prefix}-${id}'
+}
+
+pub fn (p &Picture) dom_id() string {
+	return Picture.dom_id(p.id)
+}

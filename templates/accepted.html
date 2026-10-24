@@ -12,10 +12,10 @@
   <div style="display: flex; flex-wrap: wrap; gap: 2rem">
     @for picture in result.items
     <div
-      id="@{picture.path}"
-      style="display: flex; flex-direction: column; align-items: center; gap: 1rem; max-width: 500px"
+      id="@{picture.dom_id()}"
+      style="display: flex; flex-direction: column; align-items: center; gap: 1rem;"
     >
-      <a style="display: block" href="@{picture.path}" target="_blank">
+      <a style="display: block; width: 500px; height: 500px;" href="@{picture.path}" target="_blank">
         <img
           src="@{picture.path}"
           title="@{picture.path}"
@@ -30,29 +30,11 @@
           "
         />
       </a>
-      <div style="display: flex; gap: 2rem">
-        <button onclick="pending('@{picture.path}')" style="color: yellow; font-size: 2rem">PENDING</button>
-        <button onclick="decline('@{picture.path}')" style="color: red; font-size: 2rem">DECLINE</button>
+      <div data-signals:page-kind="'@{PageKind.accepted}'" style="display: flex; gap: 2rem">
+        <button data-on:click="@@patch('/pending/@{picture.id}')" style="color: yellow; font-size: 2rem">PENDING</button>
+        <button data-on:click="@@patch('/decline/@{picture.id}')" style="color: red; font-size: 2rem">DECLINE</button>
       </div>
     </div>
     @end
   </div>
 </div>
-
-<script>
-  async function pending(src) {
-    const body = JSON.stringify({ src });
-    const result = await fetch("/pending", { method: "POST", body, headers: { "Content-Type": "application/json" } });
-    if (result.ok) {
-      document.getElementById(src)?.remove();
-    }
-  }
-
-  async function decline(src) {
-    const body = JSON.stringify({ src });
-    const result = await fetch("/decline", { method: "POST", body, headers: { "Content-Type": "application/json" } });
-    if (result.ok) {
-      document.getElementById(src)?.remove();
-    }
-  }
-</script>
