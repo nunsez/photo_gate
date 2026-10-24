@@ -21,10 +21,11 @@ bin/
 
 # Web assets and local databases
 *.db
-*.js
+*.db-shm
+*.db-wal
+# *.js
 
 # Modules installed with `v install --local` land beside this file, one
 # directory per module. Add them here if they should stay out of the repo.
 
-/config.json
-/db.sqlite3*
+/tmp

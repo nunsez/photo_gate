@@ -28,12 +28,17 @@ pub fn (ctx &Context) build_page_url(page u64) string {
 }
 
 pub struct App {
+	veb.StaticHandler
 	pool     sqlite.ConnectionPool
 	cfg_path string
 }
 
 pub fn run(port u16, cfg_path string, pool sqlite.ConnectionPool) ! {
 	mut app := App{ pool: pool, cfg_path: cfg_path }
+
+	app.enable_static_compression = true
+	app.mount_static_folder_at('static', '/public')!
+
 	veb.run[App, Context](mut app, port)
 }
 
