@@ -17,6 +17,7 @@ fn (mut ctx Context) datastar_remove(selector string) veb.Result {
 	return ctx.send_response_to_client(datastar.sse, datastar.remove_event(selector))
 }
 
+// TODO: simplify (net.urllib research)
 pub fn (ctx &Context) build_page_url(page u64) string {
 	mut params := ctx.query.clone()
 	params['page'] = page.str()
@@ -177,9 +178,14 @@ pub fn (app &App) scan(mut ctx Context) !veb.Result {
 fn handle_scan(cfg_path string, mut pool sqlite.ConnectionPool) {
 	mut conn := pool.acquire() or { return }
 	defer { pool.release(conn) }
-	walk.run_with_new_config(cfg_path, mut conn) or { return }
+
+	walk.run_with_new_config(cfg_path, mut conn) or {
+		eprintln('run with config error: ${err}')
+		return
+	}
 }
 
+// FIXME: send only needed pictures, not any files
 @['/:path...']
 pub fn (app &App) fallback(mut ctx Context, path string) veb.Result {
 	if os.is_file(path) { return ctx.file(path) }

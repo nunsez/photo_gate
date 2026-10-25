@@ -32,9 +32,7 @@ fn callback(ctx &Context, path string) {
 		last_seen:   time.utc()
 	}
 
-	sql ctx.db {
-    insert pic into Picture
-  } or {
+	core.insert_or_ignore(mut ctx.db, pic) or {
 		eprintln('walk error: ${err}')
 		return
 	}
@@ -44,9 +42,9 @@ fn callback(ctx &Context, path string) {
 
 pub fn run_with_new_config(cfg_path string, mut db sqlite.DB) ! {
 	cfg := config.parse(cfg_path)!
-	lockfile := os.join_path_single(os.temp_dir(), 'picture_gate_walker_${getpid()}.lock')
+	lockfile := os.join_path_single(os.temp_dir(), 'picture_gate_walker.lock')
 
-	if os.is_file(lockfile) { return }
+	if os.is_file(lockfile) { return error('locked') }
 	os.write_file(lockfile, '')!
 	defer { os.rm(lockfile) or {} }
 

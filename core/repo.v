@@ -3,6 +3,15 @@ module core
 import db.sqlite
 import os
 
+// TODO: ON CONFLICT (path) DO NOTHING
+pub fn insert_or_ignore(mut db sqlite.DB, picture Picture) ! {
+	sql db {
+    upsert picture into Picture
+  }!
+}
+
+// TODO: use conn instead of pool ?
+// OPTIMIZE: 2 queries instead of 1
 pub fn random_pending(mut pool sqlite.ConnectionPool) !Picture {
 	conn := pool.acquire()!
 	defer { pool.release(conn) }
@@ -17,6 +26,7 @@ pub fn random_pending(mut pool sqlite.ConnectionPool) !Picture {
 	return pictures[0]
 }
 
+// TODO: use conn instead of pool ?
 pub fn set_status(mut pool sqlite.ConnectionPool, id i64, status PictureStatus) ! {
 	conn := pool.acquire()!
 	defer { pool.release(conn) }
@@ -26,6 +36,7 @@ pub fn set_status(mut pool sqlite.ConnectionPool, id i64, status PictureStatus) 
 	}!
 }
 
+// TODO: use conn instead of pool ?
 pub fn remove_from_disk(mut pool sqlite.ConnectionPool, path string) ! {
 	conn := pool.acquire()!
 	defer { pool.release(conn) }
@@ -40,14 +51,14 @@ pub fn remove_from_disk(mut pool sqlite.ConnectionPool, path string) ! {
 @[params]
 struct PageConfig {
 pub:
-	page     u32
-	per_page u32 = 30
-	limit    u32
-	q        string
+	page  u32 @[required]
+	limit u32 = 30
+	q     string
 }
 
 fn (c &PageConfig) offset() u32 {
-	return (c.page - 1) * c.per_page
+	if c.page < 1 { return 0 }
+	return (c.page - 1) * c.limit
 }
 
 struct FetchResult[T] {
@@ -56,6 +67,8 @@ pub:
 	count u64
 }
 
+// TODO: use conn instead of pool ?
+// FIXME: complicated, double queries
 pub fn by_status(mut pool sqlite.ConnectionPool, status PictureStatus, params PageConfig) !FetchResult[Picture] {
 	conn := pool.acquire()!
 	defer { pool.release(conn) }
@@ -84,7 +97,7 @@ pub fn by_status(mut pool sqlite.ConnectionPool, status PictureStatus, params Pa
 				select from Picture
 				where status == status && path like pattern
 				order by updated_at desc
-				limit params.per_page
+				limit params.limit
 				offset offset
 			}!
 		} else {
@@ -92,7 +105,7 @@ pub fn by_status(mut pool sqlite.ConnectionPool, status PictureStatus, params Pa
 				select from Picture
 				where status == status
 				order by updated_at desc
-				limit params.per_page
+				limit params.limit
 				offset offset
 			}!
 		}

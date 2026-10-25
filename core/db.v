@@ -23,6 +23,7 @@ fn bootstrap(db_path string) ! {
 	for cmd in bootstrap_db_cmds { conn.exec(cmd)! }
 }
 
+// TODO: add callback after pool creation?
 pub fn new_pool(db_path string, pool_size i32) !sqlite.ConnectionPool {
 	bootstrap(db_path)!
 
