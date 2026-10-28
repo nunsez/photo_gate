@@ -17,6 +17,10 @@ fn (mut ctx Context) datastar_remove(selector string) veb.Result {
 	return ctx.send_response_to_client(datastar.sse, datastar.remove_event(selector))
 }
 
+fn (mut ctx Context) datastar_append(selector string, elements string) veb.Result {
+	return ctx.send_response_to_client(datastar.sse, datastar.append_event(selector, elements))
+}
+
 // TODO: simplify (net.urllib research)
 pub fn (ctx &Context) build_page_url(page u64) string {
 	mut params := ctx.query.clone()
