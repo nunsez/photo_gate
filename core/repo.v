@@ -11,6 +11,33 @@ pub fn insert_or_ignore(mut db sqlite.DB, picture Picture) ! {
 }
 
 // TODO: use conn instead of pool ?
+pub fn delete(mut pool sqlite.ConnectionPool, id i64) ! {
+	conn := pool.acquire()!
+	defer { pool.release(conn) }
+
+	sql conn {
+		delete from Picture where id == id
+	}!
+}
+
+pub struct Option[T] {
+pub:
+	value ?T
+}
+
+// TODO: use conn instead of pool ?
+pub fn find(mut pool sqlite.ConnectionPool, id i64) !Option[Picture] {
+	conn := pool.acquire()!
+	defer { pool.release(conn) }
+
+	rows := sql conn {
+		select from Picture where id == id
+	}!
+
+	return Option{rows[0]}
+}
+
+// TODO: use conn instead of pool ?
 // OPTIMIZE: 2 queries instead of 1
 pub fn random_pending(mut pool sqlite.ConnectionPool) !Picture {
 	conn := pool.acquire()!
