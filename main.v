@@ -9,9 +9,6 @@ const default_config_path = 'config.json'
 const default_database_path = 'db.sqlite3'
 
 fn main() {
-	// sendfile SIGPIPE kills the process on aborted downloads
-	os.signal_ignore(.pipe)
-
 	cfg_path := os.args[1] or { default_config_path }
 	cfg := config.parse(cfg_path)!
 
