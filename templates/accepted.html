@@ -4,7 +4,7 @@
     @include './search.html'
   </div>
 
-  <div style="display: flex; flex-wrap: wrap; gap: 2rem">
+  <div style="display: flex; flex-wrap: wrap; gap: 2rem;">
     @for picture in result.items
     <div
       id="@{picture.dom_id()}"
@@ -25,9 +25,9 @@
           "
         />
       </a>
-      <div data-signals:page-kind="'@{PageKind.accepted}'" style="display: flex; gap: 2rem">
-        <button data-on:click="@@patch('/pending/@{picture.id}')" style="color: yellow; font-size: 2rem">PENDING</button>
-        <button data-on:click="@@patch('/decline/@{picture.id}')" style="color: red; font-size: 2rem">DECLINE</button>
+      <div data-signals:page-kind="'@{PageKind.accepted}'" style="display: flex; gap: 2rem;">
+        <button data-on:click="@@patch('/pending/@{picture.id}')" style="color: yellow; font-size: 2rem;">PENDING</button>
+        <button data-on:click="@@patch('/decline/@{picture.id}')" style="color: red; font-size: 2rem;">DECLINE</button>
       </div>
     </div>
     @end

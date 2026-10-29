@@ -1,14 +1,14 @@
-<div style="display: flex; flex-direction: column; align-items: center; gap: 1rem">
+<div style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
   <div>
     <a style="display: block" href="@{picture.path}" target="_blank">
-      <img id="pending-picture" src="@{picture.path}" title="@{picture.path}" style="width: auto; height: 750px" />
+      <img id="pending-picture" src="@{picture.path}" title="@{picture.path}" style="width: auto; height: 750px;" />
     </a>
   </div>
 
-  <p style="margin: 0">@{picture.path}</p>
+  <p style="margin: 0;">@{picture.path}</p>
 
-  <div data-signals:page-kind="'@{PageKind.pending}'" style="display: flex; gap: 3rem">
-    <button data-on:click="@@patch('/accept/@{picture.id}')" style="color: green; font-size: 3rem">ACCEPT</button>
-    <button data-on:click="@@patch('/decline/@{picture.id}')" style="color: red; font-size: 3rem">DECLINE</button>
+  <div data-signals:page-kind="'@{PageKind.pending}'" style="display: flex; gap: 3rem;">
+    <button data-on:click="@@patch('/accept/@{picture.id}')" style="color: green; font-size: 3rem;">ACCEPT</button>
+    <button data-on:click="@@patch('/decline/@{picture.id}')" style="color: red; font-size: 3rem;">DECLINE</button>
   </div>
 </div>
