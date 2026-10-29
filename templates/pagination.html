@@ -1,6 +1,6 @@
 <nav style="display: flex; gap: 1rem;">
   @if pagination.has_prev()
-  <a href="@{ctx.build_page_url(pagination.current - 1)}">←</a>
+  <a id="prev-page" href="@{ctx.build_page_url(pagination.current - 1)}">←</a>
   @else
   <span>←</span>
   @end
@@ -14,8 +14,13 @@
   @end
 
   @if pagination.has_next()
-  <a href="@{ctx.build_page_url(pagination.current + 1)}">→</a>
+  <a id="next-page" href="@{ctx.build_page_url(pagination.current + 1)}">→</a>
   @else
   <span>→</span>
   @end
+
+  <div data-on:keydown__window="
+    evt.key == 'ArrowLeft' && document.querySelector('#prev-page')?.click();
+    evt.key == 'ArrowRight' && document.querySelector('#next-page')?.click();
+  "></div>
 </nav>
