@@ -20,7 +20,8 @@
   @end
 
   <div data-on:keydown__window="
-    evt.key == 'ArrowLeft' && document.querySelector('#prev-page')?.click();
-    evt.key == 'ArrowRight' && document.querySelector('#next-page')?.click();
+    if (evt.target.tagName === 'INPUT' || evt.target.tagName === 'TEXTAREA') { return; }
+    evt.key === 'ArrowLeft' && document.querySelector('#prev-page')?.click();
+    evt.key === 'ArrowRight' && document.querySelector('#next-page')?.click();
   "></div>
 </nav>
