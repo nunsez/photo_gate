@@ -140,3 +140,20 @@ pub fn by_status(mut pool sqlite.ConnectionPool, status PictureStatus, params Pa
 
 	return FetchResult{ items: items, count: count }
 }
+
+pub fn picture_statuses(pool &sqlite.ConnectionPool) !map[PictureStatus]string {
+	conn := pool.acquire()!
+	defer { pool.release(conn) }
+
+	rows := conn.exec('SELECT status, count(id) FROM pictures GROUP BY status ORDER BY status')!
+	mut result := map[PictureStatus]string{}
+
+	for row in rows {
+		status_str := row.vals[0] or { continue }
+		count := row.vals[1] or { continue }
+		status := PictureStatus.from(status_str.int()) or { continue }
+		result[status] = count
+	}
+
+	return result
+}
