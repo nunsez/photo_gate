@@ -32,7 +32,8 @@ fn report_picture_statuses(pool &sqlite.ConnectionPool, interval u32) {
 	for {
 		time.sleep(interval * time.second)
 		result := core.picture_statuses(pool) or { continue }
-		println(' PENDING: ${result[.pending]}
+		println('
+ PENDING: ${result[.pending]}
 ACCEPTED: ${result[.accepted]}
 DECLINED: ${result[.declined]}')
 	}
