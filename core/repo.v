@@ -2,6 +2,7 @@ module core
 
 import db.sqlite
 import os
+import time
 
 // TODO: ON CONFLICT (path) DO NOTHING
 pub fn insert_or_ignore(mut db sqlite.DB, picture Picture) ! {
@@ -38,19 +39,15 @@ pub fn find(mut pool sqlite.ConnectionPool, id i64) !Option[Picture] {
 }
 
 // TODO: use conn instead of pool ?
-// OPTIMIZE: 2 queries instead of 1
 pub fn random_pending(mut pool sqlite.ConnectionPool) !Picture {
 	conn := pool.acquire()!
 	defer { pool.release(conn) }
 
-	rows := conn.execute('SELECT id FROM pictures WHERE status = 0 ORDER BY RANDOM() LIMIT 1')!
-	pending_id := if row := rows[0] { row.vals[0] } else { return error('not found') }
+	sql := 'SELECT * FROM pictures WHERE status = ${int(PictureStatus.pending)} ORDER BY RANDOM() LIMIT 1'
 
-	pictures := sql conn {
-    select from Picture where id == pending_id
-  }!
+	row := conn.exec(sql)![0] or { return error('not found') }
 
-	return pictures[0]
+	return Picture.from_row(row)
 }
 
 // TODO: use conn instead of pool ?
